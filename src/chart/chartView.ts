@@ -1,6 +1,7 @@
 import { init, dispose, type Chart, type KLineData, type DeepPartial, type Styles } from 'klinecharts'
 import type { Bar } from '../types'
 import { TV } from './theme'
+import { DISPLAY_TZ } from '../data/resample'
 
 const toK = (b: Bar): KLineData => ({ timestamp: b.t, open: b.o, high: b.h, low: b.l, close: b.c, volume: b.v })
 
@@ -44,7 +45,7 @@ export class ChartView {
     const chart = init(host, { styles })
     if (!chart) throw new Error('Could not initialise chart')
     this.chart = chart
-    chart.setTimezone('America/New_York')
+    chart.setTimezone(DISPLAY_TZ)
     chart.setDataLoader({
       getBars: ({ type, callback }) => callback(type === 'init' ? this.series.slice() : [], false), // copy: the chart must not alias our working array
       subscribeBar: ({ callback }) => { this.push = callback },

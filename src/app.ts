@@ -12,7 +12,7 @@ import { registerPineOverlays, syncPineOverlays } from './chart/pineOverlay'
 import { registerTradeOverlays, syncTradeOverlays, mountChartContextMenu } from './chart/tradeOverlay'
 import { linesView, tradeActions } from './tradeSession'
 import { ReplayEngine } from './replay/engine'
-import { aggregate, aggregateUpTo } from './data/resample'
+import { aggregate, aggregateUpTo, DISPLAY_TZ, SESSION_TZ } from './data/resample'
 import { fetchYahooBars, maxRangeFor, type YahooInterval } from './data/yahoo'
 import { listSeries, loadBars, saveBars, type SeriesInfo } from './data/store'
 import { createAccount, onBar, equity, qtyStep, type AccountState } from './broker/broker'
@@ -70,7 +70,8 @@ export async function startApp(): Promise<void> {
   }
   const showStatus = (msg = ''): void => {
     const lb = last()
-    const when = lb ? new Date(lb.t).toLocaleString('en-GB', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }) + ' ET' : ''
+    const clock = (tz: string): string => new Date(lb!.t).toLocaleString('en-GB', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short', timeZoneName: 'short' })
+    const when = lb ? `${clock(DISPLAY_TZ)} · ${new Date(lb.t).toLocaleTimeString('en-GB', { timeZone: SESSION_TZ, timeStyle: 'short', timeZoneName: 'short' })}` : ''
     status.innerHTML = `<b>${symbolTag(inst)}</b> · ${ds.short} · ${tfMin >= 60 ? tfMin / 60 + 'h' : tfMin + 'm'}${win ? ` · ${win.from} → ${win.to}` : ''}${when ? ' · ' + when : ''}${msg ? ' · ' + esc(msg) : ''}`
   }
   // Trade lines follow the account on every render; outside replay (no last price, stale account) they are cleared.

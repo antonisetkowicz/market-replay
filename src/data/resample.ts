@@ -2,6 +2,8 @@ import type { Bar, Minutes } from '../types'
 
 export const MS_PER_MIN = 60_000
 export const SESSION_TZ = 'America/New_York'
+/** Chart axis / status clock. Sessions stay anchored to New York, so NY open = 15:30 here (14:30 in the ~3 weeks US and EU DST differ). */
+export const DISPLAY_TZ = 'Europe/Warsaw'
 /** CME Globex daily session opens 18:00 New York time (previous evening). */
 export const SESSION_OPEN_HOUR = 18
 const DAILY_MINUTES = 1440

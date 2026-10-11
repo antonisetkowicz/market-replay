@@ -1,0 +1,79 @@
+//@version=5
+indicator("TJR-Style Sessions (Clean Lines + Following Labels)", overlay=true, max_lines_count=500, max_labels_count=500)
+tz = input.string("America/New_York", "Session Timezone")
+asiaCore = input.session("1800-0000", "Asia CORE (NY)")
+lonCore  = input.session("0200-0500", "London CORE (NY)")
+nyCore   = input.session("0930-1100", "New York AM (NY)")
+useAsiaCarry  = input.bool(true,  "Asia Carry 00:00–02:00")
+asiaCarrySess = input.session("0000-0200", "Asia Carry Window")
+useLonCarry   = input.bool(true,  "London Carry 05:00–09:30")
+lonCarrySess  = input.session("0500-0930", "London Carry Window")
+useNYCarry    = input.bool(true,  "NY Carry 11:00–16:00")
+nyCarrySess   = input.session("1100-1600", "NY Carry Window")
+extendAsiaMins   = input.int(360, "Extend Asia (mins)", minval=0)
+extendLondonMins = input.int(360, "Extend London (mins)", minval=0)
+extendNYMins     = input.int(240, "Extend NY (mins)", minval=0)
+lineW = input.int(2, "Line Width", minval=1, maxval=5)
+asiaCol = color.rgb(95, 175, 115)
+lonCol  = color.rgb(24, 203, 227)
+nyCol   = color.rgb(60, 60, 60)
+ms_from_mins(_m) => _m * 60 * 1000
+in_session(_sess) => not na(time(timeframe.period, _sess, tz))
+f_session(_core, _carry, _useCarry, _extendMins, _col, _name) =>
+    coreIn    = in_session(_core)
+    coreStart = coreIn and not coreIn[1]
+    coreEnd   = not coreIn and coreIn[1]
+    carryIn   = in_session(_carry)
+    trackIn   = coreIn or (_useCarry and carryIn)
+    var float H = na
+    var float L = na
+    var int   HT = na
+    var int   LT = na
+    var int   endX = na
+    var line  HLn = na
+    var line  LLn = na
+    var label HLb = na
+    var label LLb = na
+    if coreStart
+        if not na(HLn)
+            line.delete(HLn)
+        if not na(LLn)
+            line.delete(LLn)
+        if not na(HLb)
+            label.delete(HLb)
+        if not na(LLb)
+            label.delete(LLb)
+        H := high
+        L := low
+        HT := time
+        LT := time
+        endX := na
+        HLb := label.new(time, H, _name + " High", xloc=xloc.bar_time, style=label.style_none, textcolor=_col, size=size.tiny)
+        LLb := label.new(time, L, _name + " Low",  xloc=xloc.bar_time, style=label.style_none, textcolor=_col, size=size.tiny)
+    if trackIn
+        if na(H) or high > H
+            H := high
+            HT := time
+        if na(L) or low < L
+            L := low
+            LT := time
+    if coreEnd
+        endX := time[1] + ms_from_mins(_extendMins)
+    x2 = trackIn ? time : (na(endX) ? time : endX)
+    if not na(H) and not na(HT)
+        if na(HLn)
+            HLn := line.new(HT, H, x2, H, xloc=xloc.bar_time, color=_col, width=lineW)
+        line.set_xy1(HLn, HT, H)
+        line.set_xy2(HLn, x2, H)
+    if not na(L) and not na(LT)
+        if na(LLn)
+            LLn := line.new(LT, L, x2, L, xloc=xloc.bar_time, color=_col, width=lineW)
+        line.set_xy1(LLn, LT, L)
+        line.set_xy2(LLn, x2, L)
+    if not na(HLb) and not na(H)
+        label.set_xy(HLb, x2, H)
+    if not na(LLb) and not na(L)
+        label.set_xy(LLb, x2, L)
+f_session(asiaCore, asiaCarrySess, useAsiaCarry, extendAsiaMins, asiaCol, "Asia")
+f_session(lonCore,  lonCarrySess,  useLonCarry,  extendLondonMins, lonCol, "London")
+f_session(nyCore,   nyCarrySess,   useNYCarry,   extendNYMins,     nyCol, "New York")

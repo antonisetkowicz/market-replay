@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>Market Replay</title>
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar"></header>
+      <aside id="drawbar"></aside>
+      <main id="chartwrap">
+        <div id="chart"></div>
+        <div id="replaybar" hidden></div>
+        <div id="pickhint" hidden role="status">Click a bar to start the replay · Esc to cancel</div>
+        <div id="status"></div>
+      </main>
+      <aside id="trade"></aside>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
